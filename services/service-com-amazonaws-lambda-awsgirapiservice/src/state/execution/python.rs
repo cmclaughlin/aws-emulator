@@ -1454,6 +1454,7 @@ impl Bounds {
 }
 
 /// How many bytes of memory THIS thread has faulted in, as the host reports it.
+#[cfg(target_os = "linux")]
 fn faulted_bytes() -> u64 {
     match ::nix::sys::resource::getrusage(::nix::sys::resource::UsageWho::RUSAGE_THREAD) {
         Ok(usage) => {
@@ -1462,6 +1463,12 @@ fn faulted_bytes() -> u64 {
         }
         Err(_) => 0,
     }
+}
+
+/// Only Linux has a per-thread fault count, so other hosts report none.
+#[cfg(not(target_os = "linux"))]
+fn faulted_bytes() -> u64 {
+    0
 }
 
 /// How many bytes this PROCESS holds resident, as the host reports it.
